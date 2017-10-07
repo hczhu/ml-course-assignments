@@ -92,7 +92,7 @@ function test_gradient(model, data, wd_coefficient)
     % fprintf('%d %e %e %e %e\n', test_index, base_theta(test_index), diff, fd_here, analytic_here);
     if diff < correctness_threshold, continue; end
     if diff / (abs(analytic_here) + abs(fd_here)) < correctness_threshold, continue; end
-    error(sprintf('Theta element #%d, with value %e, has finite difference gradient %e but analytic gradient %e. That looks like an error.\n', test_index, base_theta(test_index), fd_here, analytic_here));
+    error(sprintf('Theta element #%d, with value %e, has finite difference gradient %e but analytic gradient %e. That looks like an error. diff = %e\n', test_index, base_theta(test_index), fd_here, analytic_here, diff));
   end
   fprintf('Gradient test passed. That means that the gradient that your code computed is within 0.001%% of the gradient that the finite difference approximation computed, so the gradient calculation procedure is probably correct (not certainly, but probably).\n');
 end
@@ -135,17 +135,40 @@ function ret = loss(model, data, wd_coefficient)
   ret = classification_loss + wd_loss;
 end
 
-function ret = d_loss_by_d_model(model, data, wd_coefficient)
-  % model.input_to_hid is a matrix of size <number of hidden units> by <number of inputs i.e. 256>
-  % model.hid_to_class is a matrix of size <number of classes i.e. 10> by <number of hidden units>
-  % data.inputs is a matrix of size <number of inputs i.e. 256> by <number of data cases>. Each column describes a different data case. 
-  % data.targets is a matrix of size <number of classes i.e. 10> by <number of data cases>. Each column describes a different data case. It contains a one-of-N encoding of the class, i.e. one element in every column is 1 and the others are 0.
+function ret = softmax(data)
+  % every column is an output vector. ;
+  data -= max(data) * eye(size(data, 2));
+  ret = exp(data - log(sum(exp(data))) * eye(size(data, 2)));
+end
 
-  % The returned object is supposed to be exactly like parameter <model>, i.e. it has fields ret.input_to_hid and ret.hid_to_class. However, the contents of those matrices are gradients (d loss by d model parameter), instead of model parameters.
-	 
-  % This is the only function that you're expected to change. Right now, it just returns a lot of zeros, which is obviously not the correct output. Your job is to replace that by a correct computation.
-  ret.input_to_hid = model.input_to_hid * 0;
-  ret.hid_to_class = model.hid_to_class * 0;
+function ret = d_loss_by_d_model(model, data, wd_coefficient)
+  % model.input_to_hid is a matrix of size <number of hidden units> by <number of inputs i.e. 256>;
+  % model.hid_to_class is a matrix of size <number of classes i.e. 10> by <number of hidden units>;
+  % data.inputs is a matrix of size <number of inputs i.e. 256> by <number of data cases>. Each column describes a different data case. ;
+  % data.targets is a matrix of size <number of classes i.e. 10> by <number of data cases>. Each column describes a different data case. It contains a one-of-N encoding of the class, i.e. one element in every column is 1 and the others are 0.;
+;
+  % The returned object is supposed to be exactly like parameter <model>, i.e. it has fields ret.input_to_hid and ret.hid_to_class. However, the contents of those matrices are gradients (d loss by d model parameter), instead of model parameters.;
+	 ;
+  % This is the only function that you're expected to change. Right now, it just returns a lot of zeros, which is obviously not the correct output. Your job is to replace that by a correct computation.;
+  ret.input_to_hid = model.input_to_hid * 0;;
+  ret.hid_to_class = model.hid_to_class * 0;;
+  ;
+  a_0 = data.inputs;;
+  z_0 = model.input_to_hid * a_0; % input to the hidden units, i.e. before the logistic. size: <number of hidden units> by <number of data cases>;
+  a_1 = logistic(z_0); % output of the hidden units, i.e. after the logistic. size: <number of hidden units> by <number of data cases>;
+  z_1 = model.hid_to_class * a_1; % input to the components of the softmax. size: <number of classes, i.e. 10> by <number of data cases>;
+  a_2 = softmax(z_1);
+;
+  % wd_coefficient = 0;
+;
+  d_z_1 = a_2 - data.targets;
+  d_w_1 = d_z_1 * a_1' / size(data.targets, 2) + wd_coefficient * model.hid_to_class;
+
+  d_z_0 = (1 - a_1) .* a_1 .* (model.hid_to_class' * d_z_1);
+  d_w_0 = d_z_0 * a_0' / size(data.targets, 2) + wd_coefficient * model.input_to_hid;
+  
+  ret.input_to_hid = d_w_0;
+  ret.hid_to_class = d_w_1;
 end
 
 function ret = model_to_theta(model)
