@@ -16,7 +16,7 @@ end
 
 % SET HYPERPARAMETERS HERE.
 batchsize = 100;  % Mini-batch size.
-learning_rate = .001;  % Learning rate; default = 0.1.
+learning_rate = .1;  % Learning rate; default = 0.1.
 momentum = 0.9;  % Momentum; default = 0.9.
 numhid1 = 50;  % Dimensionality of embedding space; default = 50.
 numhid2 = 200;  % Number of units in hidden layer; default = 200.

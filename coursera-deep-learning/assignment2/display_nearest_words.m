@@ -17,6 +17,7 @@ end
 % Compute distance to every other word.
 vocab_size = size(vocab, 2);
 word_rep = word_embedding_weights(id, :);
+word_rep
 diff = word_embedding_weights - repmat(word_rep, vocab_size, 1);
 distance = sqrt(sum(diff .* diff, 2));
 
