@@ -1,5 +1,5 @@
 % This function trains a neural network language model.
-function [model] = train(epochs)
+function [model] = train(epochs, dim_embed, dim_hid, momentum, learning_rate)
 % Inputs:
 %   epochs: Number of epochs to run.
 % Output:
