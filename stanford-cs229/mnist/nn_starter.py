@@ -39,7 +39,7 @@ def nn_train(trainData, trainLabels, devData, devLabels, testData, testLabels):
         z2 = np.matmul(W2, a1) + B2[:, np.newaxis]
         a2 = softmax(z2)
         accuracy = 1.0 * np.sum((np.argmax(a2, 0) == np.argmax(y, 0)).astype(int)) / y.shape[1]
-        xen = -np.sum(np.log(a2 * y + 1e-20))
+        xen = -np.sum(np.log(a2 * y + 1e-20)) / y.shape[1]
         return z1, a1, z2, a2, xen, accuracy
     def report(name, x, y):
         _, _, _, _, xen, accuracy = forward(x.T, y.T)
@@ -47,12 +47,13 @@ def nn_train(trainData, trainLabels, devData, devLabels, testData, testLabels):
             name,
             xen,
             accuracy)) 
+        sys.stderr.flush()
         return (xen, accuracy)
     dev_stats = []
     train_stats = []
     E = 30
-    print('Epoch {}'.format(' '.join([str(e) for e in range(E)])))
-    for epoch in range(1, E):
+    print('Epoch {}'.format(','.join([str(e) for e in range(E)])))
+    for epoch in range(1, E + 1):
         for b in range(0, m, B):
             # Reference: http://cs229.stanford.edu/notes/cs229-notes-backprop.pdf
             a0 = trainData[b:(b + B), :].T
@@ -110,6 +111,7 @@ def main():
     testLabels = one_hot_labels(testLabels)
     testData = (testData - mean) / std
     sys.stderr.write('loaded all data.\n')
+    sys.stderr.flush()
     nn_train(trainData, trainLabels, devData, devLabels, testData, testLabels)
 
 if __name__ == '__main__':
