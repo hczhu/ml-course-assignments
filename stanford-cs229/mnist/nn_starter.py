@@ -33,6 +33,7 @@ def nn_train(trainData, trainLabels, devData, devLabels, testData, testLabels):
 
     W2 = np.random.randn(O, num_hidden)
     B2 = np.zeros(O)
+    L = 0.0001
     def forward(x, y):
         z1 = np.matmul(W1, x) + B1[:, np.newaxis]
         a1 = sigmoid(z1)
@@ -67,9 +68,9 @@ def nn_train(trainData, trainLabels, devData, devLabels, testData, testLabels):
             dz1 = np.matmul(W2.T, dz2) * d_a1_z1
             dw1 = np.matmul(dz1, a0.T)
 
-            W2 -= (learning_rate / S) * dw2
+            W2 -= (learning_rate / S) * dw2 + ((2.0 * L ) * W2)
             B2 -= (learning_rate / S) * dz2.sum(1)
-            W1 -= (learning_rate / S) * dw1
+            W1 -= (learning_rate / S) * dw1 + ((2.0 * L) * W1)
             B1 -= (learning_rate / S) * dz1.sum(1)
         dev_stats.append(report('dev at epoch #{}'.format(epoch), devData, devLabels))
         train_stats.append(report('train at epoch #{}'.format(epoch), trainData, trainLabels))
