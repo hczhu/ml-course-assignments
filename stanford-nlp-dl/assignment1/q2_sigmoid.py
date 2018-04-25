@@ -1,26 +1,42 @@
+#!/usr/bin/env python
+
 import numpy as np
+
 
 def sigmoid(x):
     """
     Compute the sigmoid function for the input here.
-    """
-    return 1.0 / (1 + np.exp(-x))
 
-def sigmoid_grad(f):
+    Arguments:
+    x -- A scalar or numpy array.
+
+    Return:
+    s -- sigmoid(x)
+    """
+    
+    s = 1.0 / (1 + np.exp(-x.clip(-100, 100)))
+    return s
+
+
+def sigmoid_grad(s):
     """
     Compute the gradient for the sigmoid function here. Note that
-    for this implementation, the input f should be the sigmoid
-    function value of your original input x. 
+    for this implementation, the input s should be the sigmoid
+    function value of your original input x.
+
+    Arguments:
+    s -- A scalar or numpy array.
+
+    Return:
+    ds -- Your computed gradient.
     """
-    
-    ### YOUR CODE HERE
-    ### END YOUR CODE
-    
-    return f * (1 - f)
+
+    return s * (1.0 - s)
+
 
 def test_sigmoid_basic():
     """
-    Some simple tests to get you started. 
+    Some simple tests to get you started.
     Warning: these are not exhaustive.
     """
     print("Running basic tests...")
@@ -28,24 +44,30 @@ def test_sigmoid_basic():
     f = sigmoid(x)
     g = sigmoid_grad(f)
     print(f)
-    assert np.amax(f - np.array([[0.73105858, 0.88079708], 
-        [0.26894142, 0.11920292]])) <= 1e-6
+    f_ans = np.array([
+        [0.73105858, 0.88079708],
+        [0.26894142, 0.11920292]])
+    assert np.allclose(f, f_ans, rtol=1e-05, atol=1e-06)
     print(g)
-    assert np.amax(g - np.array([[0.19661193, 0.10499359],
-        [0.19661193, 0.10499359]])) <= 1e-6
-    print("You should verify these results!\n")
+    g_ans = np.array([
+        [0.19661193, 0.10499359],
+        [0.19661193, 0.10499359]])
+    print(g_ans)
+    assert np.allclose(g, g_ans, rtol=1e-05, atol=1e-06)
+    print("You should verify these results by hand!\n")
 
-def test_sigmoid(): 
+
+def test_sigmoid():
     """
     Use this space to test your sigmoid implementation by running:
-        python q2_sigmoid.py 
+        python q2_sigmoid.py
     This function will not be called by the autograder, nor will
     your tests be graded.
     """
     print("Running your tests...")
     ### YOUR CODE HERE
-    # raise NotImplementedError
     ### END YOUR CODE
+
 
 if __name__ == "__main__":
     test_sigmoid_basic();
