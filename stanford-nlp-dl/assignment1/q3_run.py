@@ -39,8 +39,8 @@ wordVectors = sgd(
 # Note that normalization is not called here. This is not a bug,
 # normalizing during training loses the notion of length.
 
-print "sanity check: cost at convergence should be around or below 10"
-print "training took %d seconds" % (time.time() - startTime)
+print("sanity check: cost at convergence should be around or below 10")
+print("training took %d seconds" % (time.time() - startTime))
 
 # concatenate the input and output word vectors
 wordVectors = np.concatenate(
@@ -54,18 +54,25 @@ visualizeWords = [
     "worth", "sweet", "enjoyable", "boring", "bad", "waste", "dumb",
     "annoying"]
 
-visualizeIdx = [tokens[word] for word in visualizeWords]
+for i in range(len(visualizeWords)):
+    if visualizeWords[i] not in tokens:
+        visualizeWords[i] += '__'
+
+visualizeIdx = [tokens[word] if word in tokens else 0 for word in visualizeWords]
 visualizeVecs = wordVectors[visualizeIdx, :]
 temp = (visualizeVecs - np.mean(visualizeVecs, axis=0))
 covariance = 1.0 / len(visualizeIdx) * temp.T.dot(temp)
 U,S,V = np.linalg.svd(covariance)
 coord = temp.dot(U[:,0:2])
 
-for i in xrange(len(visualizeWords)):
+for i in range(len(visualizeWords)):
     plt.text(coord[i,0], coord[i,1], visualizeWords[i],
         bbox=dict(facecolor='green', alpha=0.1))
 
 plt.xlim((np.min(coord[:,0]), np.max(coord[:,0])))
 plt.ylim((np.min(coord[:,1]), np.max(coord[:,1])))
 
+plt.show()
+
 plt.savefig('q3_word_vectors.png')
+

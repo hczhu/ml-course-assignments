@@ -59,7 +59,7 @@ def softmaxCostAndGradient(predicted, target, outputVectors, dataset):
 
     ### YOUR CODE HERE
     y = softmax(outputVectors.dot(predicted))
-    cost = -np.log(y[target])
+    cost = -np.log(y[target] + 1e-60)
     
     y[target] -= 1.0
     gradPred = outputVectors.T.dot(y)
@@ -97,7 +97,9 @@ def negSamplingCostAndGradient(predicted, target, outputVectors, dataset,
 
     # Sampling of indices is done for you. Do not modify this if you
     # wish to match the autograder and receive points!
+    # negIndices may have duplicate items
     negIndices = getNegativeSamples(target, dataset, K)
+
 
     grad = np.zeros(outputVectors.shape)
     ### YOUR CODE HERE.
@@ -107,7 +109,10 @@ def negSamplingCostAndGradient(predicted, target, outputVectors, dataset,
 
     gradPred = (sigTarget - 1) * outputVectors[target] - np.matmul((sigNeg - 1), outputVectors[negIndices])
     grad[target] = (sigTarget - 1) * predicted
-    grad[negIndices] = -(sigNeg - 1)[:,np.newaxis] * predicted
+
+    delta = -(sigNeg - 1)[:,np.newaxis] * predicted
+    for i in range(len(negIndices)):
+        grad[negIndices[i]] += delta[i]
     ### END YOUR CODE
 
     return cost, gradPred, grad
@@ -231,10 +236,10 @@ def test_word2vec():
     dummy_tokens = dict([("a",0), ("b",1), ("c",2),("d",3),("e",4)])
     print("==== Gradient check for skip-gram ====")
     gradcheck_naive(lambda vec: word2vec_sgd_wrapper(
-        skipgram, dummy_tokens, vec, dataset, 5, softmaxCostAndGradient),
+        skipgram, dummy_tokens, vec, dataset, 5, negSamplingCostAndGradient),
         dummy_vectors)
     gradcheck_naive(lambda vec: word2vec_sgd_wrapper(
-        skipgram, dummy_tokens, vec, dataset, 5, negSamplingCostAndGradient),
+        skipgram, dummy_tokens, vec, dataset, 5, softmaxCostAndGradient),
         dummy_vectors)
     print("\n==== Gradient check for CBOW      ====")
     gradcheck_naive(lambda vec: word2vec_sgd_wrapper(
